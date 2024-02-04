@@ -15,6 +15,7 @@ echo "2. Decrypt disk"
 echo "3. Format disk"
 echo "4. Mount disk"
 echo "5. Unmount disk"
+echo "6. Lock disk"
 read option
 
 case $option in
@@ -74,6 +75,10 @@ case $option in
         read unmountpoint
         umount $unmountpoint
         echo "Disk unmounted from $unmountpoint"
+        ;;
+    6)
+        echo "Locking the disk..."
+        cryptsetup luksClose /dev/mapper/encrypted_disk
         ;;
     *)
         echo "Invalid option."
