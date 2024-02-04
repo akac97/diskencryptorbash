@@ -50,6 +50,24 @@ case $option in
         read mountpoint
         mount /dev/mapper/encrypted_disk $mountpoint
         echo "Disk mounted at $mountpoint"
+        echo "Choose an option:"
+        echo "1. Give access to a normal user"
+        echo "2. Keep access restricted to root"
+        read access_option
+        case $access_option in
+            1)
+                echo "Enter the username to give access to mountpoint:"
+                read username
+                chown $username:$username $mountpoint
+                echo "Access given to $username"
+                ;;
+            2)
+                echo "Access is kept restricted to root"
+                ;;
+            *)
+                echo "Invalid option."
+                ;;
+        esac
         ;;
     5)
         echo "Enter the mount point to unmount (e.g., /mnt/mydisk):"
