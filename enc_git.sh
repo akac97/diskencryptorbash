@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# Set default Git user information globally (change as needed)
+git config --global user.email "you@example.com"
+git config --global user.name "Your Name"
+
 # List all disk names
 echo "Available disks:"
 lsblk -dpno NAME
@@ -53,40 +57,23 @@ case $option in
         read mountpoint
         mount /dev/mapper/encrypted_disk $mountpoint
         echo "Disk mounted at $mountpoint"
-        echo "Choose an option:"
-        echo "1. Give access to a normal user"
-        echo "2. Keep access restricted to root"
-        read access_option
-        case $access_option in
-            1)
-                echo "Enter the username to give access to mountpoint:"
-                read username
-                chown $username:$username $mountpoint
-                echo "Access given to $username"
-                ;;
-            2)
-                echo "Access is kept restricted to root"
-                ;;
-            *)
-                echo "Invalid option."
-                ;;
-        esac
+        
+        # Git Init and Git LFS
+        git -C $mountpoint init
+        git -C $mountpoint lfs install --skip-repo
+
+        # Configure local Git LFS tracking
+        git -C $mountpoint lfs track "*"
         ;;
     5)
         echo "Enter the mount point to unmount (e.g., /mnt/mydisk):"
         read unmountpoint
-        # Add all files to Git
-        git -C $unmountpoint add .
-        # If there are large files, add them to Git LFS
-        find $unmountpoint -type f -size +10M -exec git -C $unmountpoint lfs track {} \;
-        echo "All files added to Git or Git LFS"
-        # Get the current commit number
-        commit_number=$(git -C $unmountpoint rev-list --count HEAD)
-        # Increment the commit number
-        let "commit_number++"
-        # Commit changes
-        git -C $unmountpoint commit -m "Commit $commit_number"
-        echo "Changes committed to Git as Commit $commit_number"
+        
+        # Git add, commit, and push
+        git -C $unmountpoint add --all
+        git -C $unmountpoint commit -m "Automatic commit"
+        git -C $unmountpoint push origin master
+        
         umount $unmountpoint
         echo "Disk unmounted from $unmountpoint"
         ;;
@@ -97,10 +84,14 @@ case $option in
     7)
         echo "Enter the mount point for Git Init (e.g., /mnt/mydisk):"
         read git_init_mountpoint
-        # Initialize a new Git repository
-        git init $git_init_mountpoint
-        # Initialize Git LFS
-        git -C $git_init_mountpoint lfs install
+
+        # Git Init and Git LFS
+        git -C $git_init_mountpoint init
+        git -C $git_init_mountpoint lfs install --skip-repo
+
+        # Configure local Git LFS tracking
+        git -C $git_init_mountpoint lfs track "*"
+
         echo "Git repository and Git LFS initialized at $git_init_mountpoint"
         ;;
     8)
@@ -112,22 +103,22 @@ case $option in
         case $snapshot_option in
             1)
                 echo "Listing snapshots..."
-                git -C /mnt/mydisk log --oneline --pretty=format:"%h - %s, %cr, size: %f" --stat
+                git -C $mountpoint log --oneline --pretty=format:"%h - %s, %cr, size: %f" --stat
                 ;;
             2)
                 echo "Listing snapshots..."
-                git -C /mnt/mydisk log --oneline --pretty=format:"%h - %s, %cr, size: %f" --stat
+                git -C $mountpoint log --oneline --pretty=format:"%h - %s, %cr, size: %f" --stat
                 echo "Enter the commit hash to revert to:"
                 read commit_hash
-                git -C /mnt/mydisk checkout $commit_hash
+                git -C $mountpoint checkout $commit_hash
                 echo "Reverted to snapshot $commit_hash"
                 ;;
             3)
                 echo "Listing snapshots..."
-                git -C /mnt/mydisk log --oneline --pretty=format:"%h - %s, %cr, size: %f" --stat
+                git -C $mountpoint log --oneline --pretty=format:"%h - %s, %cr, size: %f" --stat
                 echo "Enter the commit hash to delete:"
                 read commit_hash
-                git -C /mnt/mydisk branch -D $commit_hash
+                git -C $mountpoint branch -D $commit_hash
                 echo "Deleted snapshot $commit_hash"
                 ;;
             *)
