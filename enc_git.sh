@@ -62,8 +62,10 @@ case $option in
         git -C $mountpoint init
         git -C $mountpoint lfs install --skip-repo
 
-        # Configure local Git LFS tracking
+        # Configure local Git LFS tracking for all files
         git -C $mountpoint lfs track "*"
+        git -C $mountpoint lfs track ".*"
+
         ;;
     5)
         echo "Enter the mount point to unmount (e.g., /mnt/mydisk):"
@@ -89,8 +91,9 @@ case $option in
         git -C $git_init_mountpoint init
         git -C $git_init_mountpoint lfs install --skip-repo
 
-        # Configure local Git LFS tracking
+        # Configure local Git LFS tracking for all files
         git -C $git_init_mountpoint lfs track "*"
+        git -C $git_init_mountpoint lfs track ".*"
 
         echo "Git repository and Git LFS initialized at $git_init_mountpoint"
         ;;
