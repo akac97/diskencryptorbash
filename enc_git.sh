@@ -73,6 +73,7 @@ case $option in
         
         # Git add, commit, and push
         git -C $unmountpoint add --all
+        git -C $unmountpoint add .*
         git -C $unmountpoint commit -m "Automatic commit"
         git -C $unmountpoint push origin master
         
@@ -113,8 +114,15 @@ case $option in
                 git -C $mountpoint log --oneline --pretty=format:"%h - %s, %cr, size: %f" --stat
                 echo "Enter the commit hash to revert to:"
                 read commit_hash
+
+                # Stash local changes
+                git -C $mountpoint stash push -m "Stashing local changes before revert"
+                
+                # Revert to the selected snapshot
                 git -C $mountpoint checkout $commit_hash
-                echo "Reverted to snapshot $commit_hash"
+
+                # Apply stashed changes
+                git -C $mountpoint stash pop
                 ;;
             3)
                 echo "Listing snapshots..."
