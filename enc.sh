@@ -21,7 +21,7 @@ read option
 case $option in
     1)
         echo "Encrypting the disk..."
-        cryptsetup -y -v luksFormat --type luks2 --cipher aes-xts-plain64 --key-size 512 --hash sha512 --iter-time 10000 --use-random /dev/$disk
+        cryptsetup -y -v luksFormat --type luks2 --cipher serpent-xts-plain64 --key-size 512 --hash sha512 --iter-time 10000 --use-random /dev/$disk
         ;;
     2)
         echo "Decrypting the disk..."
